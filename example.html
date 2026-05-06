@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand-Flow AI 智能图文创作</title>
+    <style>
+        /* ================= CSS 变量与重置 ================= */
+        :root {
+            --primary: #0b57d0;
+            --primary-hover: #0842a0;
+            --bg-body: #e3e6e8;
+            --bg-app: #f0f4f9;
+            --bg-panel: #ffffff;
+            --text-main: #1f1f1f;
+            --text-secondary: #5f6368;
+            --border-color: #e1e5ea;
+            --success: #1e8e3e;
+            --warning: #f9ab00;
+            --danger: #d93025;
+            --radius-lg: 24px;
+            --radius-md: 12px;
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-body); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+
+        /* ================= 通用布局 ================= */
+        .app-window {
+            width: 1366px; height: 768px; max-width: 95vw; max-height: 95vh;
+            background: var(--bg-app); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg); display: flex; position: relative; overflow: hidden;
+            border: 1px solid #fff;
+        }
+
+        .screen { display: none; width: 100%; height: 100%; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* 按钮与输入框 */
+        button { cursor: pointer; border: none; outline: none; transition: 0.2s; font-size: 14px; }
+        .btn-primary { background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 20px; font-weight: 500; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 8px 16px; border-radius: 20px; font-weight: 500; }
+        .btn-outline:hover { background: #e8f0fe; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 50%; background: #f0f4f9; display: flex; justify-content: center; align-items: center; color: var(--text-secondary); }
+        .btn-icon:hover { background: #e1e5ea; color: var(--text-main); }
+
+        /* ================= 1. 登录界面 (Login) ================= */
+        #screen-login { justify-content: center; align-items: center; background: linear-gradient(135deg, #f0f4f9 0%, #d3e3fd 100%); }
+        .login-card { background: var(--bg-panel); padding: 50px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); text-align: center; width: 400px; }
+        .login-logo { font-size: 40px; margin-bottom: 20px; }
+        .login-card h1 { font-size: 24px; color: var(--text-main); margin-bottom: 10px; }
+        .login-card p { color: var(--text-secondary); margin-bottom: 30px; font-size: 14px; }
+        .login-input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; }
+        .login-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); font-size: 16px; margin-top: 10px;}
+
+        /* ================= 2. 全局导航侧边栏 (Global Nav) ================= */
+        .global-nav { width: 72px; background: var(--bg-panel); display: flex; flex-direction: column; align-items: center; padding: 24px 0; border-right: 1px solid var(--border-color); z-index: 20; }
+        .nav-icon { width: 40px; height: 40px; border-radius: 50%; margin-bottom: 16px; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; color: var(--text-secondary); transition: 0.2s;}
+        .nav-icon.active { background: #d3e3fd; color: var(--primary); }
+        .nav-icon:hover:not(.active) { background: #e1e5ea; }
+        .nav-bottom { margin-top: auto; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(45deg, #4285f4, #9b72cb); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);}
+
+        /* ================= 3. 首页 (Home) ================= */
+        .home-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-app); }
+        .greeting { font-size: 48px; font-weight: 600; margin-bottom: 40px; background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .prompt-container { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 15px; }
+        .kb-selector-home { align-self: flex-start; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-size: 14px; cursor: pointer; outline: none; }
+        
+        .prompt-box { width: 100%; background: var(--bg-panel); border-radius: 36px; padding: 12px 24px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 16px; border: 1px solid var(--border-color); transition: 0.3s; }
+        .prompt-box:focus-within { box-shadow: 0 6px 20px rgba(0,0,0,0.08); border-color: #d3e3fd; }
+        .prompt-box input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
+        .send-button { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px;}
+        .send-button:hover { background: var(--primary-hover); }
+
+        /* ================= 4. 工作台 (Workspace) ================= */
+        .workspace-layout { display: flex; flex: 1; overflow: hidden; }
+        
+        /* 顶部工具栏 */
+        .top-bar { height: 60px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; }
+        .view-toggle { display: flex; background: #f0f4f9; border-radius: 20px; padding: 4px; }
+        .view-btn { padding: 6px 16px; border-radius: 16px; font-size: 13px; font-weight: 500; color: var(--text-secondary); background: transparent; }
+        .view-btn.active { background: var(--bg-panel); color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-main); background: #e8f0fe; padding: 6px 16px; border-radius: 20px;}
+        .spinner { width: 14px; height: 14px; border: 2px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+
+        /* 左侧知识库 (多层级 RBAC) & 历史记录 */
+        .left-sidebar { width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        
+        /* 侧边栏标签页 (Tabs) */
+        .sidebar-tabs { display: flex; border-bottom: 1px solid var(--border-color); background: var(--bg-app); }
+        .tab-btn { flex: 1; padding: 12px 0; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--bg-panel); }
+        .tab-btn:hover:not(.active) { color: var(--text-main); }
+        .sidebar-pane { display: none; flex-direction: column; flex: 1; overflow-y: auto; }
+        .sidebar-pane.active { display: flex; }
+
+        /* 历史记录项样式 */
+        .history-item { padding: 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; display: flex; gap: 12px; align-items: center; }
+        .history-item:hover { background: #f8fafd; border-left: 3px solid var(--primary); padding-left: 13px; }
+        .history-thumb { width: 40px; height: 40px; border-radius: 8px; background: #e1e5ea; display: flex; justify-content: center; align-items: center; font-size: 20px; }
+        .history-info { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .history-title { font-size: 13px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-meta { font-size: 11px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; }
+        .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 500;}
+        .status-done { background: #e6f4ea; color: #137333; }
+        .status-draft { background: #fef7e0; color: #b06000; }
+
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .kb-dropdown { width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 14px; margin-bottom: 15px; outline: none; background: #f8fafd; cursor: pointer;}
+        .upload-area { border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 15px; text-align: center; color: var(--primary); font-size: 13px; cursor: pointer; transition: 0.2s; background: #f8fafd;}
+        .upload-area:hover { border-color: var(--primary); background: #e8f0fe; }
+        .upload-area.hidden { display: none; } /* RBAC 隐藏 */
+        
+        .asset-list { padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .asset-item { display: flex; align-items: center; gap: 12px; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); cursor: grab; background: #fff;}
+        .asset-item:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+        .asset-color { width: 24px; height: 24px; border-radius: 6px; }
+
+        /* 中间核心区 (节点图 / 大图预览) */
+        .center-canvas { flex: 1; position: relative; background-image: radial-gradient(#d7dadc 1px, transparent 1px); background-size: 24px 24px; overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        
+        /* 节点模式 */
+        #view-node { width: 100%; height: 100%; position: relative; }
+        .flow-node { position: absolute; width: 220px; background: var(--bg-panel); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); z-index: 2; cursor: pointer; transition: 0.2s; }
+        .flow-node:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .flow-node.active { border: 2px solid var(--primary); }
+        .node-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; font-weight: 600;}
+        .dot-status { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-running { background: var(--primary); animation: pulse 1s infinite; }
+        .dot-success { background: var(--success); }
+        .node-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+        /* 连线 */
+        .svg-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .line-path { stroke: var(--primary); stroke-width: 2; fill: none; stroke-dasharray: 6; animation: dash 20s linear infinite; opacity: 0.5;}
+
+        /* 预览/画板模式 (局部重绘) */
+        #view-preview { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; padding: 20px; position: relative; }
+        .floating-toolbar { display: flex; gap: 8px; background: var(--bg-panel); padding: 8px; border-radius: 24px; box-shadow: var(--shadow-lg); position: absolute; top: 20px; z-index: 10;}
+        .tool-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .tool-btn:hover, .tool-btn.active { background: #e8f0fe; color: var(--primary); }
+        
+        .preview-image-container { margin-top: 60px; width: 400px; height: 500px; background: linear-gradient(45deg, #e1e5ea, #f0f4f9); border-radius: 8px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; color: #aaa; border: 2px dashed #c4c7c5;}
+        .save-asset-btn { position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; align-items: center; gap: 6px; }
+
+        /* 右侧属性面板 */
+        .right-panel { width: 300px; background: var(--bg-panel); border-left: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .panel-title { font-size: 16px; font-weight: 600; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag { background: #f0f4f9; padding: 6px 12px; border-radius: 8px; font-size: 12px; display: flex; align-items: center; gap: 4px; border: 1px solid var(--border-color);}
+        .tag-del { cursor: pointer; color: var(--text-secondary); }
+        .tag-del:hover { color: var(--danger); }
+        
+        /* ================= 5. 个人中心/团队管理 (Modal) ================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--bg-panel); width: 600px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        .team-member { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafd; border-radius: var(--radius-md); }
+        
+        /* 动画 */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(11,87,208, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(11,87,208, 0); } 100% { box-shadow: 0 0 0 0 rgba(11,87,208, 0); } }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-window">
+        
+        <!-- 全局侧边导航 -->
+        <div class="global-nav" id="global-nav" style="display: none;">
+            <div class="nav-icon active" onclick="switchScreen('home')" title="首页">✨</div>
+            <div class="nav-icon" onclick="switchScreen('workspace')" title="工作台">📈</div>
+            <div class="nav-bottom">
+                <div class="avatar" onclick="openProfileModal()" title="团队与权限管理">王</div>
+            </div>
+        </div>
+
+        <!-- ================= SCREEN 1: 登录界面 ================= -->
+        <div id="screen-login" class="screen active">
+            <div class="login-card">
+                <div class="login-logo">🌊</div>
+                <h1>Brand-Flow AI</h1>
+                <p>品牌级可控图文智能创作平台</p>
+                <input type="text" class="login-input" placeholder="企业邮箱 / 账号" value="wang@hdu.edu.cn">
+                <input type="password" class="login-input" placeholder="密码" value="******">
+                <button class="btn-primary login-btn" onclick="login()">登 入</button>
+                <p style="margin-top: 20px; font-size: 12px; cursor: pointer;">忘记密码？ | 申请企业试用</p>
+            </div>
+        </div>
+
+        <!-- ================= SCREEN 2: 首页 ================= -->
+        <div id="screen-home" class="screen">
+            <div class="home-content">
+                <h1 class="greeting">准备好大干一场了吗？</h1>
+                <div class="prompt-container">
+                    <select class="kb-selector-home">
+                        <option>🏠 默认使用：个人知识库</option>
+                        <option selected>👥 使用：瑞幸项目组知识库</option>
+                        <option>🏢 使用：集团全局知识库</option>
+                    </select>
+                    <div class="prompt-box">
+                        <input type="text" id="main-prompt" placeholder="描述你的创意，例如：给瑞幸咖啡做一张夏日户外海报，极简风格...">
+                        <div class="send-button" onclick="startWorkflow()">➤</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SCREEN 3: 工作台 (核心) ================= -->
+        <div id="screen-workspace" class="screen">
+            <div class="top-bar">
+                <div style="font-weight: 600;">☕ 瑞幸夏日海报_v1</div>
+                
+                <!-- 顶部视图切换 -->
+                <div class="view-toggle">
+                    <button class="view-btn active" id="btn-view-node" onclick="switchWorkspaceView('node')">节点流视图</button>
+                    <button class="view-btn" id="btn-view-preview" onclick="switchWorkspaceView('preview')">画板预览 (精修)</button>
+                </div>
+
+                <div class="status-indicator">
+                    <div class="spinner"></div>
+                    <span>运行中：知识匹配节点...</span>
+                </div>
+            </div>
+
+            <div class="workspace-layout">
+                
+                <!-- 左侧：多层级知识库 & 历史记录 -->
+                <div class="left-sidebar">
+                    <div class="sidebar-tabs">
+                        <button class="tab-btn active" id="btn-tab-assets" onclick="switchSidebarTab('assets')">知识资产</button>
+                        <button class="tab-btn" id="btn-tab-history" onclick="switchSidebarTab('history')">历史记录</button>
+                    </div>
+
+                    <!-- 标签页 1：知识资产 -->
+                    <div id="sidebar-assets" class="sidebar-pane active">
+                        <div class="sidebar-header">
+                            <select class="kb-dropdown" id="sidebar-kb-select" onchange="handleKBChange()">
+                                <option value="personal">🏠 个人知识库</option>
+                                <option value="team_member" selected>👥 瑞幸项目组 (成员视角)</option>
+                                <option value="team_admin">👑 瑞幸项目组 (管理员视角)</option>
+                            </select>
+                            <!-- RBAC 控制显示的上传按钮 -->
+                            <div class="upload-area hidden" id="kb-upload-btn">
+                                + 点击或拖拽上传新规范素材
+                            </div>
+                            <div id="kb-permission-hint" style="font-size: 12px; color: var(--warning); margin-top: 8px;">
+                                🔒 仅限查看/调用，无修改权限
+                            </div>
+                        </div>
+                        
+                        <div class="asset-list">
+                            <div style="font-size: 12px; font-weight: bold; color: var(--text-secondary);">匹配资产 (拖拽至画布可用)</div>
+                            <div class="asset-item">
+                                <div class="asset-color" style="background: #0022AB;"></div>
+                                <span style="font-size: 13px;">品牌蓝 #0022AB</span>
+                            </div>
+                            <div class="asset-item">
+                                <div style="border: 1px solid #ccc; padding: 2px 4px; border-radius: 4px; font-size: 12px; font-family: serif;">Luckin</div>
+                                <span style="font-size: 13px;">标准白底Logo.svg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 标签页 2：历史记录 -->
+                    <div id="sidebar-history" class="sidebar-pane">
+                        <div style="padding: 16px; font-size: 12px; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); background: #f8fafd;">
+                            查看与恢复最近的生成任务
+                        </div>
+                        
+                        <div class="history-item" onclick="loadHistory('task-001')">
+                            <div class="history-thumb">☕</div>
+                            <div class="history-info">
+                                <div class="history-title">瑞幸夏日海报_v1</div>
+                                <div class="history-meta">
+                                    <span>10分钟前</span>
+                                    <span class="status-tag status-draft">进行中</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="history-item" onclick="loadHistory('task-002')">
+                            <div class="history-thumb">📱</div>
+                            <div class="history-info">
+                                <div class="history-title">中秋朋友圈推广图文排版测试</div>
+                                <div class="history-meta">
+                                    <span>昨天 14:30</span>
+                                    <span class="status-tag status-done">已完成</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item" onclick="loadHistory('task-003')">
+                            <div class="history-thumb">🍂</div>
+                            <div class="history-info">
+                                <div class="history-title">秋季上新主视觉概念</div>
+                                <div class="history-meta">
+                                    <span>2026-05-04</span>
+                                    <span class="status-tag status-done">已完成</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间画布区 -->
+                <div class="center-canvas">
+                    
+                    <!-- 视图 A：节点流模式 -->
+                    <div id="view-node">
+                        <svg class="svg-lines">
+                            <path class="line-path" d="M 280 180 C 350 180, 350 180, 420 180" />
+                            <path class="line-path" d="M 640 180 C 710 180, 710 180, 780 180" />
+                        </svg>
+
+                        <!-- 节点 1 -->
+                        <div class="flow-node" style="top: 130px; left: 60px;">
+                            <div class="node-head">
+                                <span>🧠 意图解析</span>
+                                <div class="dot-status dot-success"></div>
+                            </div>
+                            <div class="node-desc">已成功拆解主体与风格。</div>
+                        </div>
+
+                        <!-- 节点 2 (Active) -->
+                        <div class="flow-node active" style="top: 130px; left: 420px;">
+                            <div class="node-head">
+                                <span>📁 知识库匹配</span>
+                                <div class="dot-status dot-running"></div>
+                            </div>
+                            <div class="node-desc">正在检索瑞幸组团队规范...</div>
+                        </div>
+
+                        <!-- 节点 3 -->
+                        <div class="flow-node" style="top: 130px; left: 780px; opacity: 0.6;">
+                            <div class="node-head">
+                                <span>🎨 模型绘图</span>
+                                <div class="dot-status" style="background: #ccc;"></div>
+                            </div>
+                            <div class="node-desc">等待参数注入...</div>
+                        </div>
+                    </div>
+
+                    <!-- 视图 B：预览与局部精修模式 -->
+                    <div id="view-preview">
+                        <div class="floating-toolbar">
+                            <button class="tool-btn active" title="移动画布">👆</button>
+                            <button class="tool-btn" title="局部涂抹 (In-painting)" onclick="alert('进入遮罩涂抹模式，左侧弹出提示词修改框。')">🖌️</button>
+                            <button class="tool-btn" title="橡皮擦">🧽</button>
+                            <div style="width: 1px; background: var(--border-color); margin: 0 4px;"></div>
+                            <button class="tool-btn" title="撤销">↩️</button>
+                        </div>
+                        
+                        <button class="btn-primary save-asset-btn" onclick="alert('已将当前图层存入【个人知识库】')">
+                            ➕ 存入个人库
+                        </button>
+
+                        <div class="preview-image-container">
+                            [此处渲染生成的高清海报大图]
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 右侧：属性控制面板 -->
+                <div class="right-panel">
+                    <div class="panel-title">节点属性：知识库匹配</div>
+                    
+                    <div>
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">基于意图自动命中的标签</div>
+                        <div class="tag-group">
+                            <div class="tag">冷萃咖啡 <span class="tag-del">✕</span></div>
+                            <div class="tag">夏日 <span class="tag-del">✕</span></div>
+                            <div class="tag" style="border-style: dashed; cursor: pointer; color: var(--primary);">+ 手动添加</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">匹配逻辑阈值</div>
+                        <input type="range" style="width: 100%;" title="相似度阈值">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);">
+                            <span>宽泛</span>
+                            <span>精准</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-outline" style="margin-top: auto; text-align: center;">⏸️ 拦截并人工修改后续指令</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= 模态框：团队与权限管理 ================= -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏢 团队空间管理</h2>
+                <button class="btn-icon" onclick="closeProfileModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 14px; margin-bottom: 10px;">当前所在空间</h3>
+                        <select class="login-input">
+                            <option>瑞幸项目组 (当前)</option>
+                            <option>个人独立空间</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 14px; margin-bottom: 10px;">我的角色</h3>
+                        <div style="padding: 14px; background: #e8f0fe; color: var(--primary); border-radius: var(--radius-md); font-weight: 600;">
+                            项目组成员 (读写部分受限)
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-size: 14px; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                        <span>团队成员列表</span>
+                        <span style="color: var(--primary); cursor: pointer; font-weight: normal;">+ 邀请成员</span>
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                        <div class="team-member">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="avatar" style="width: 32px; height: 32px; font-size: 12px;">张</div>
+                                <span>张主管</span>
+                            </div>
+                            <span style="font-size: 12px; color: var(--text-secondary); background: #e1e5ea; padding: 4px 8px; border-radius: 12px;">管理员</span>
+                        </div>
+                        <div class="team-member">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="avatar" style="width: 32px; height: 32px; font-size: 12px; background: #34a853;">王</div>
+                                <span>王一恒 (我)</span>
+                            </div>
+                            <span style="font-size: 12px; color: var(--text-secondary);">普通成员</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 交互逻辑脚本 ================= -->
+    <script>
+        // 界面切换逻辑
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            
+            // 登录界面隐藏侧边栏，其他界面显示
+            const nav = document.getElementById('global-nav');
+            if(screenId === 'login') {
+                nav.style.display = 'none';
+            } else {
+                nav.style.display = 'flex';
+                // 更新侧边栏 active 状态
+                document.querySelectorAll('.nav-icon').forEach(icon => icon.classList.remove('active'));
+                if(screenId === 'home') document.querySelectorAll('.nav-icon')[0].classList.add('active');
+                if(screenId === 'workspace') document.querySelectorAll('.nav-icon')[1].classList.add('active');
+            }
+        }
+
+        function login() { switchScreen('home'); }
+        
+        function startWorkflow() { 
+            const input = document.getElementById('main-prompt').value;
+            if(!input) { alert('王同学，得先输入点创意才能开始哦！'); return; }
+            switchScreen('workspace'); 
+        }
+
+        // 工作台：节点图与画板视图切换
+        function switchWorkspaceView(viewType) {
+            const btnNode = document.getElementById('btn-view-node');
+            const btnPreview = document.getElementById('btn-view-preview');
+            const viewNode = document.getElementById('view-node');
+            const viewPreview = document.getElementById('view-preview');
+
+            if (viewType === 'node') {
+                btnNode.classList.add('active'); btnPreview.classList.remove('active');
+                viewNode.style.display = 'block'; viewPreview.style.display = 'none';
+            } else {
+                btnPreview.classList.add('active'); btnNode.classList.remove('active');
+                viewPreview.style.display = 'flex'; viewNode.style.display = 'none';
+            }
+        }
+
+        // 侧边栏：知识资产与历史记录切换
+        function switchSidebarTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.sidebar-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById('btn-tab-' + tabId).classList.add('active');
+            document.getElementById('sidebar-' + tabId).classList.add('active');
+        }
+
+        // 模拟加载历史记录
+        function loadHistory(taskId) {
+            alert('已选择加载历史任务：' + taskId + '\n\n画布数据已还原，您可以继续中断的节点流工作了！');
+        }
+
+        // 核心亮点：RBAC 权限 UI 联动逻辑
+        function handleKBChange() {
+            const select = document.getElementById('sidebar-kb-select');
+            const uploadBtn = document.getElementById('kb-upload-btn');
+            const hint = document.getElementById('kb-permission-hint');
+            
+            if (select.value === 'personal') {
+                uploadBtn.classList.remove('hidden');
+                uploadBtn.innerText = "+ 本地上传私人素材";
+                hint.innerText = "✅ 你拥有完全管理权限";
+                hint.style.color = "var(--success)";
+            } else if (select.value === 'team_member') {
+                uploadBtn.classList.add('hidden'); // 普通成员隐藏上传
+                hint.innerText = "🔒 仅限查看/调用，无上传规范权限";
+                hint.style.color = "var(--warning)";
+            } else if (select.value === 'team_admin') {
+                uploadBtn.classList.remove('hidden'); // 管理员显示上传
+                uploadBtn.innerText = "+ 添加团队全局规范资产";
+                hint.innerText = "👑 管理员视角：可维护团队资产";
+                hint.style.color = "var(--primary)";
+            }
+        }
+
+        // 个人中心/团队管理 Modal 逻辑
+        function openProfileModal() { document.getElementById('profile-modal').style.display = 'flex'; }
+        function closeProfileModal() { document.getElementById('profile-modal').style.display = 'none'; }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('profile-modal');
+            if (event.target == modal) closeProfileModal();
+        }
+
+        // 初始化执行一次权限判定渲染
+        handleKBChange();
+    </script>
+</body>
+</html>
