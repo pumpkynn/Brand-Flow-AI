@@ -4,9 +4,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { OrgModule } from './modules/org/org.module';
+import { AssetsModule } from './modules/assets/assets.module';
 
 @Module({
   imports: [
+    OrgModule,
+    AssetsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
