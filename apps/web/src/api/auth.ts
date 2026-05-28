@@ -74,7 +74,7 @@ function toAuthResult(backend: BackendLoginData): AuthResult {
  * - 后端 TransformInterceptor 将响应包装为 { success, data, message }
  *   其中 data = { access_token, user }
  * - axios 响应拦截器已执行 response.data
- * - 所以 apiClient.post 返回的是 { success, data: { access_token, user }, message }
+ * - 所以 apiClient.post 返回的是 { success: true, data: BackendLoginData, message: "success" }
  * - 需要取 res.data 获取 BackendLoginData
  */
 async function realLogin(params: LoginParams) {

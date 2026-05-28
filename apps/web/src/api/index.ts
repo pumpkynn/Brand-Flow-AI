@@ -7,6 +7,7 @@
  */
 
 import axios from 'axios'
+import { useAuthStore } from '@/store/useAuthStore'
 
 // ============================================================
 // Axios 实例
@@ -21,9 +22,10 @@ const apiClient = axios.create({
 // 自动注入 token（从 auth store 中读取）
 apiClient.interceptors.request.use(
   (config) => {
-    // 后续可以从 useAuthStore 获取 token 并注入
-    // const token = useAuthStore.getState().token
-    // if (token) config.headers.Authorization = `Bearer ${token}`
+    const token = useAuthStore.getState().token
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => Promise.reject(error),
@@ -42,7 +44,8 @@ apiClient.interceptors.response.use(
       '网络异常，请稍后重试'
 
     if (error.response?.status === 401) {
-      // token 过期，跳转到登录页
+      // token 过期，清除持久化登录状态后跳转到登录页
+      useAuthStore.getState().logout()
       window.location.href = '/login'
     }
 

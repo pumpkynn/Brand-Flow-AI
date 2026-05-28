@@ -4,13 +4,16 @@
  * 路由结构：
  * - /login     → AuthLayout + LoginPage    （登录页，不带侧边栏）
  * - /register  → AuthLayout + RegisterPage （注册页，不带侧边栏）
- * - /          → 根路径自动重定向到 /login
- * - /home      → AppLayout + Home           （首页，带侧边栏）
- * - /workspace → AppLayout + Workspace      （工作台，带侧边栏）
- * - /profile   → AppLayout + ProfilePage    （个人中心，带侧边栏）
+ * - /          → AuthGuard 鉴权守卫
+ *   - 未登录  → 自动重定向到 /login
+ *   - 已登录  → AppLayout 壳层
+ *     - /home      → 首页
+ *     - /workspace → 工作台
+ *     - /profile   → 个人中心
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import AuthGuard from '@/router/AuthGuard'
 import AppLayout from '@/layouts/AppLayout'
 import AuthLayout from '@/layouts/AuthLayout'
 import Workspace from '@/pages/workspace/workspace'
@@ -20,7 +23,7 @@ import RegisterPage from '@/pages/login/register'
 import ProfilePage from '@/pages/profile/profile'
 
 export const router = createBrowserRouter([
-  /* 未登录态路由：使用 AuthLayout（居中卡片布局，无侧边栏） */
+  /* 公开路由：无需登录即可访问 */
   {
     path: '/login',
     element: <AuthLayout />,
@@ -32,15 +35,20 @@ export const router = createBrowserRouter([
     children: [{ index: true, element: <RegisterPage /> }],
   },
 
-  /* 已登录态路由：使用 AppLayout（含侧边栏 + 顶部安全区） */
+  /* 受保护路由：需登录后才能访问，未登录自动跳转 /login */
   {
     path: '/',
-    element: <AppLayout />,
+    element: <AuthGuard />,
     children: [
-      { index: true, element: <Navigate to="/login" replace /> },
-      { path: 'home', element: <Home /> },
-      { path: 'workspace', element: <Workspace /> },
-      { path: 'profile', element: <ProfilePage /> },
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to="/home" replace /> },
+          { path: 'home', element: <Home /> },
+          { path: 'workspace', element: <Workspace /> },
+          { path: 'profile', element: <ProfilePage /> },
+        ],
+      },
     ],
   },
 ])
