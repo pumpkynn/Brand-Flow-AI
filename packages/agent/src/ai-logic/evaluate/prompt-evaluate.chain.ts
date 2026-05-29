@@ -5,6 +5,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { EVALUATION_PROMPT } from "../prompts/evaluate-prompt";
 import type { EvaluationInput, EvaluationResult } from "./evaluate-types";
 import { safeJsonParse } from "../../common";
+import { asRunnableLlm } from "../../common/langchain-utils";
 
 
 // 创建评估链
@@ -24,7 +25,7 @@ export function createPromptEvaluationChain() {
       brandGuidelines: input.brandGuidelines || "无品牌规范",
     }),
     prompt,
-    llm,
+    asRunnableLlm(llm),
     new StringOutputParser(),
     (rawOutput): EvaluationResult => {
       return safeJsonParse<EvaluationResult>(rawOutput, {

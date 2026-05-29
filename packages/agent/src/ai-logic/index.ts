@@ -3,8 +3,9 @@ export * from './prompts/prompt-expert'
 export * from './prompts/evaluate-prompt'
 export * from './chains/intent-chain'
 export * from './chains/prompt-chain'
-export * from './chains/workflow-chain'
+
 export * from "./evaluate/evaluate-types";
 export * from "./evaluate/prompt-evaluate.chain";
 export * from "./memory/memory-types";
 export * from "./memory/conversation-memory";
+export * from "./graph";

@@ -5,6 +5,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { PROMPT_GENERATE_TEMPLATE } from "../prompts/prompt-expert";
 import type { IntentType } from "./intent-chain";
 import { safeJsonParse } from "../../common";
+import { asRunnableLlm } from "../../common/langchain-utils";
 
 export interface PromptChainInput {
   userQuery: string;
@@ -36,7 +37,7 @@ export function createPromptChain() {
       context: input.context || "无上下文",
     }),
     promptTemplate,
-    llm,
+    asRunnableLlm(llm),
     new StringOutputParser(),
     (rawOutput: string): PromptChainOutput => {
       return safeJsonParse<PromptChainOutput>(rawOutput, {

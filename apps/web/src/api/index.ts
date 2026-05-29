@@ -1,17 +1,18 @@
-/**
- * Axios 实例与拦截器封装
- *
- * 架构说明：
- * - 提供统一的 axios 实例，配置 baseURL、超时、请求/响应拦截器
- * - 不再使用 mock 模式，直接对接真实后端 API
- */
-
 import axios from 'axios'
 import { useAuthStore } from '@/store/useAuthStore'
+import { message } from 'antd'
 
-// ============================================================
-// Axios 实例
-// ============================================================
+// 从后端复制过来的
+export interface ApiResponse<T = any> {
+  success: boolean
+  statusCode: number
+  errorCode?: number
+  data: T
+  message: string
+  path?: string
+  timestamp?: string
+}
+
 const apiClient = axios.create({
   baseURL: 'http://localhost:3000/api',
   timeout: 15000,
@@ -22,10 +23,9 @@ const apiClient = axios.create({
 // 自动注入 token（从 auth store 中读取）
 apiClient.interceptors.request.use(
   (config) => {
+    // 后续可以从 useAuthStore 获取 token 并注入
     const token = useAuthStore.getState().token
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`
     return config
   },
   (error) => Promise.reject(error),
@@ -36,56 +36,17 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    // 从后端错误响应体中提取 message
-    const backendData = error.response?.data
-    const message =
-      backendData?.message ||
-      error.message ||
-      '网络异常，请稍后重试'
+    const backendData = error.response?.data as ApiResponse | undefined
+    const errorMessage = backendData?.message || error.message || '网络异常，请稍后重试'
+    message.error(errorMessage)
 
-    if (error.response?.status === 401) {
-      // token 过期，清除持久化登录状态后跳转到登录页
-      useAuthStore.getState().logout()
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+      useAuthStore.getState().logout?.()
       window.location.href = '/login'
     }
 
-    return Promise.reject(new Error(message))
+    return Promise.reject(error)
   },
 )
-
-// ============================================================
-// Mock 工具函数
-// ============================================================
-// 注意：当前 knowledge.ts / workflow.ts / team.ts 仍在使用这些工具，
-// 未来全部对接真实后端后可移除。
-
-/**
- * 模拟网络延迟
- * @param ms 延迟毫秒数（默认 600ms，模拟真实网络）
- */
-export function mockDelay(ms = 600): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-/**
- * 包装 mock 响应（统一返回格式）
- * @param data 返回数据
- * @param success 是否成功
- */
-export function mockResponse<T>(data: T, success = true) {
-  return { success, data, message: success ? 'ok' : 'error' }
-}
-
-/**
- * 统一 API 调用入口
- * - mock 模式下直接调用 mockFn 返回假数据
- * - 非 mock 模式下走 axios 真实请求
- */
-export async function callApi<T>(
-  mockFn: () => Promise<T>,
-  requestFn: () => Promise<T>,
-): Promise<T> {
-  return requestFn()
-}
 
 export default apiClient

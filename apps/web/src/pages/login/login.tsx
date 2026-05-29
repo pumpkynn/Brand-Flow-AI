@@ -39,9 +39,7 @@ const LoginPage = () => {
         navigate('/home')
       }
     } catch (err: unknown) {
-      /* 捕获 API 抛出的错误（如账号不存在、密码错误），展示友好提示 */
-      const msg = err instanceof Error ? err.message : '登录失败，请稍后重试'
-      message.error(msg)
+      // 错误提示已在 apiClient 响应拦截器中统一处理
     } finally {
       setSubmitting(false)
     }
@@ -114,7 +112,9 @@ const LoginPage = () => {
         {/* 底部切换：跳转到注册页 */}
         <div className={styles.switchRow}>
           还没有账号？
-          <Link to="/register" className={styles.switchLink}>注册账号</Link>
+          <Link to="/register" className={styles.switchLink}>
+            注册账号
+          </Link>
         </div>
       </Form>
     </div>

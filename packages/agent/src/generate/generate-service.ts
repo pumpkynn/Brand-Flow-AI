@@ -1,20 +1,26 @@
 import { GenerateRequest, GenerateResult, GenerateType } from "./generate-types";
 import { brandService } from "../brand";
 import { ChatOpenAI } from "@langchain/openai";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { asRunnableLlm } from "../common/langchain-utils";
 
 // 生成服务核心类
 export class GenerateService {
-  private textLlm?: ChatOpenAI;
+  // 原直接初始化改为懒加载，避免模块加载时崩溃
+  private _textLlm: ChatOpenAI | null = null;
 
-  /** 延迟初始化，避免 import 时因未加载 .env 导致 API 启动失败 */
-  private getTextLlm(): ChatOpenAI {
-    if (!this.textLlm) {
-      this.textLlm = new ChatOpenAI({
+  private get textLlm(): ChatOpenAI {
+    if (!this._textLlm) {
+      this._textLlm = new ChatOpenAI({
         modelName: process.env.OPENAI_MODEL_NAME || "gpt-4o",
         temperature: 0.7,
       });
     }
-    return this.textLlm;
+    return this._textLlm;
+  }
+
+  constructor() {
+    // 原代码：this.textLlm = new ChatOpenAI({...}) 已移至 getter 中懒加载
   }
 
   // 执行生成
@@ -46,7 +52,9 @@ export class GenerateService {
         content: "",
         generateType: req.generateType || "image",
         promptUsed: "",
-        message: "生成失败，请重试",
+        message: error instanceof Error 
+  ? error.message 
+  : "生成失败，请重试",
       };
     }
   }
@@ -87,14 +95,13 @@ export class GenerateService {
     promptData: { finalPrompt: string; systemPrompt?: string },
     brandName: string
   ): Promise<string> {
-    const { ChatPromptTemplate } = await import("@langchain/core/prompts");
 
     const chatPrompt = ChatPromptTemplate.fromMessages([
       ["system", promptData.systemPrompt || `你是一位专业的品牌文案撰写专家，为品牌"${brandName}"生成高质量的文案内容。`],
       ["human", `请根据以下需求生成品牌文案：\n\n${promptData.finalPrompt}`],
     ]);
 
-    const chain = chatPrompt.pipe(this.getTextLlm());
+    const chain = chatPrompt.pipe(asRunnableLlm(this.textLlm));
     const result = await chain.invoke({});
 
     return result.content.toString();
@@ -105,7 +112,6 @@ export class GenerateService {
     promptData: { finalPrompt: string; systemPrompt?: string },
     brand: { brandName: string; brandStyle: string[]; mainColors: string[] }
   ): Promise<string> {
-    const { ChatPromptTemplate } = await import("@langchain/core/prompts");
 
     const chatPrompt = ChatPromptTemplate.fromMessages([
       [
@@ -115,7 +121,7 @@ export class GenerateService {
       ["human", `生成品牌物料描述：\n\n${promptData.finalPrompt}`],
     ]);
 
-    const chain = chatPrompt.pipe(this.getTextLlm());
+    const chain = chatPrompt.pipe(asRunnableLlm(this.textLlm));
     const result = await chain.invoke({});
 
     return result.content.toString();

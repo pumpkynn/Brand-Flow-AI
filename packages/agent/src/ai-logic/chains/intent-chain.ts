@@ -4,6 +4,7 @@ import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { INTENT_ANALYSIS_PROMPT } from "../prompts/intent-prompt";
 import { safeJsonParse } from "../../common";
+import { asRunnableLlm } from "../../common/langchain-utils";
 
 export type IntentType = "品牌描述" | "图片生成" | "风格调整" | "其他";
 
@@ -24,20 +25,20 @@ export function createIntentChain() {
   const prompt = PromptTemplate.fromTemplate(INTENT_ANALYSIS_PROMPT);
 
   return RunnableSequence.from([
-    (input) => ({
+    (input: IntentInput) => ({
       userQuery: input.userQuery,
       context: JSON.stringify(input.context || {}),
     }),
     prompt,
-    llm,
+    asRunnableLlm(llm),
     new StringOutputParser(),
-    (output) => {
-      return safeJsonParse<IntentOutput>(output, { 
-    intent: "其他", 
-    confidence: 0, 
-    reason: "解析失败", 
-    suggestedAction: "重新输入" 
-  })!;
+    (output: string) => {
+      return safeJsonParse<IntentOutput>(output, {
+        intent: "其他",
+        confidence: 0,
+        reason: "解析失败",
+        suggestedAction: "重新输入",
+      })!;
     },
   ]);
 }

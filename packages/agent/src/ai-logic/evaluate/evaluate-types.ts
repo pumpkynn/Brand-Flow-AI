@@ -2,7 +2,7 @@ import type { IntentOutput } from "../chains/intent-chain";
 import type { PromptChainOutput } from "../chains/prompt-chain";
 
 // 评估分数类型
-export type EvaluationScore = 1 | 2 | 3 | 4 | 5;
+export type EvaluationScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 // 评估单项结果
 export interface EvaluationItem {

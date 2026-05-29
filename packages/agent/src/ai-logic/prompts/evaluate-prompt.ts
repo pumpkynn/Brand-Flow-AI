@@ -6,7 +6,7 @@ export const EVALUATION_PROMPT = `
 生成提示词：{prompt}
 品牌规范：{brandGuidelines}
 
-请按1-5分评分，返回严格JSON格式，包含：
+请按1-10分评分，返回严格JSON格式，包含：
 overallScore: 总体评分
 intentEvaluation: {{ score, comment }} 意图准确性评估
 promptEvaluation: {{ score, comment }} 提示词质量评估

@@ -1,6 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { InjectModel } from '@nestjs/mongoose';
-import { createWorkflowChain } from '@brand-flow/agent';
+import { createAgentGraph, AgentStateType } from '@brand-flow/agent';
 import { Job } from 'bullmq';
 import { Model } from 'mongoose';
 import { RUN_WORKFLOW_JOB, WORKFLOW_QUEUE } from './workflow.constants';
@@ -19,7 +19,7 @@ export class WorkflowProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<RunWorkflowJobData>): Promise<void> {
+  async process(job: Job<RunWorkflowJobData>): Promise<AgentStateType | void> {
     if (job.name !== RUN_WORKFLOW_JOB) return;
 
     const workflow = await this.workflowModel.findById(job.data.workflowId);
@@ -31,24 +31,41 @@ export class WorkflowProcessor extends WorkerHost {
     });
 
     try {
-      const chain = createWorkflowChain();
-      const result = await chain.invoke({
+      const graph = createAgentGraph();
+      const initialState: Partial<AgentStateType> = {
         userQuery: workflow.prompt,
         context: {
           spaceId: workflow.spaceId,
         },
-      });
+        retryCount: 0,
+        status: "running",
+      };
+
+      let finalState: AgentStateType | undefined;
+
+      // Stream each step and emit progress
+      const stream = await graph.stream(initialState);
+      for await (const chunk of stream) {
+        await job.updateProgress(chunk);
+        finalState = Object.values(chunk)[0] as AgentStateType; 
+        // Note: graph.stream yields `{ nodeName: stateUpdate }`
+      }
+
+      const isSuccess = finalState?.status === 'success' || (finalState?.evaluationResult?.overallScore && finalState.evaluationResult.overallScore >= 4);
 
       await this.workflowModel.findByIdAndUpdate(workflow._id, {
-        status: result.status === 'success' ? 'completed' : 'failed',
-        result,
+        status: isSuccess ? 'completed' : 'failed',
+        result: finalState,
         $unset: { errorMessage: 1 },
       });
+
+      return finalState;
     } catch (error) {
       await this.workflowModel.findByIdAndUpdate(workflow._id, {
         status: 'failed',
         errorMessage: error instanceof Error ? error.message : '工作流执行失败',
       });
+      throw error;
     }
   }
 }
