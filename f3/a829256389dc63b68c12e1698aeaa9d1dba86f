@@ -3,10 +3,5 @@
   "schema_version": "authorship/3.0.0",
   "git_ai_version": "1.5.6",
   "base_commit_sha": "f3a829256389dc63b68c12e1698aeaa9d1dba86f",
-  "prompts": {},
-  "humans": {
-    "h_f730a3e3332408": {
-      "author": "pumpkynn <zuoyu@dtstack.com>"
-    }
-  }
+  "prompts": {}
 }
