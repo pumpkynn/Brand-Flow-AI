@@ -1,0 +1,12 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "788b40e22831bfddf7705a82a548c9a90d508d39",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    }
+  }
+}
