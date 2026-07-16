@@ -1,0 +1,19 @@
+apps/web/src/main.tsx
+  s_deb9e6e36811d0::t_59cbf605893049 4-5,8-9,11,13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a381f56b4775039b5008956e2911e65c7aba70cf",
+  "prompts": {},
+  "sessions": {
+    "s_deb9e6e36811d0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f69af-cdd3-7233-b0de-ef1283461da4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "zuoyu <zuoyu@dtstack.com>"
+    }
+  }
+}
