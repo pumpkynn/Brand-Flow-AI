@@ -1,0 +1,14 @@
+apps/web/src/pages/home/home.tsx
+  h_2320cf0c69977d 5-7,10-11,13,15-17,21-68,70-72,75-99,101-128,131-141,144,146,148,150-153,155-158,161-162,164-177,187-195,197-199,201,214-217,221-232,235-244,246-248,250-279,281
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "773010e6c00a8ad9c0af3514783220c7c1488afc",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    }
+  }
+}
