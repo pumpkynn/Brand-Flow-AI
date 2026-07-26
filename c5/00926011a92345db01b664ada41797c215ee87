@@ -1,0 +1,96 @@
+apps/web/src/pages/workspace/components/ImageGenPanel.tsx
+  s_f3d6e2f52aa9f2::t_42f501f203648b 45-46,49,59
+  s_f3d6e2f52aa9f2::t_e41d01d740b9fb 4,70
+  s_f3d6e2f52aa9f2::t_ff2327178c1163 8,65
+apps/web/src/pages/workspace/components/ComposePanel.tsx
+  s_f3d6e2f52aa9f2::t_faee71259e7fb3 13
+  s_f3d6e2f52aa9f2::t_8b0afd32dfd6d7 99,105
+  s_f3d6e2f52aa9f2::t_136442eee9e02c 110
+  s_f3d6e2f52aa9f2::t_ea65f87017b793 57,68,101
+apps/web/src/pages/workspace/workspace.tsx
+  s_f3d6e2f52aa9f2::t_0f5fec76446756 130-135,146-150,355,409-413,431-432,792-794
+  s_f3d6e2f52aa9f2::t_cb08b3609c49fa 736
+  s_f3d6e2f52aa9f2::t_9822785dae4cfd 725
+  s_f3d6e2f52aa9f2::t_d423358db95d3a 475
+  s_f3d6e2f52aa9f2::t_7b3b0933065a7c 61-64,126-129,136-145,184-190,358-359,362,408,414-415,424,456,461-464,482-490
+  s_f3d6e2f52aa9f2::t_8799c12956ec89 512
+  s_f3d6e2f52aa9f2::t_3c698471d9fe2b 513-515
+  s_f3d6e2f52aa9f2::t_019e7c1d0d6721 710,713
+  s_f3d6e2f52aa9f2::t_1eb1334cd8a7f8 59-60,65-78,516,518-520
+apps/web/src/store/useWorkflowStore.ts
+  s_f3d6e2f52aa9f2::t_86fb67590af8a5 81-82,86-107
+  s_f3d6e2f52aa9f2::t_924ba8967d05de 8-20,120-123
+  s_f3d6e2f52aa9f2::t_92563c1d41d9a5 128
+  h_2320cf0c69977d 24,37,62,73
+  s_f3d6e2f52aa9f2::t_fd732eefd922ba 109-119
+  s_f3d6e2f52aa9f2::t_56c76031a5f4e5 127
+  s_f3d6e2f52aa9f2::t_681b82394c1d44 108
+apps/web/src/pages/workspace/components/EvalPanel.tsx
+  s_f3d6e2f52aa9f2::t_09fda4c5cc3d84 14,63,94,104,117-124,135,138,144
+  s_f3d6e2f52aa9f2::t_b1bbdd93ff6a4f 149
+apps/web/src/index.css
+  s_f3d6e2f52aa9f2::t_466b57ae0aa221 92-93
+  s_f3d6e2f52aa9f2::t_f9138e5e3b3cec 59,84,103,108
+apps/web/src/layouts/AppLayout.module.css
+  h_2320cf0c69977d 25
+  s_f3d6e2f52aa9f2::t_a70a210bb35fa6 49,51-53,76,93,109
+apps/web/src/pages/workspace/components/NodePanelFooter.tsx
+  s_f3d6e2f52aa9f2::t_4ee006949106b8 3-5,7-12,14-19,21-35
+  s_f3d6e2f52aa9f2::t_ae45c19dc2ab17 1-2,6,13,20
+apps/web/src/pages/workspace/components/BrandKbPanel.tsx
+  s_f3d6e2f52aa9f2::t_410ca553fbf9ab 12,46
+  s_f3d6e2f52aa9f2::t_ea773652dc296e 15-18,47-52
+  s_f3d6e2f52aa9f2::t_fda49c11aab822 27,57-61,69,72
+  s_f3d6e2f52aa9f2::t_b9f36f7a814361 8,80
+apps/web/src/pages/workspace/components/PromptExpertPanel.tsx
+  s_f3d6e2f52aa9f2::t_84c7f7ad161704 9,11,106-120
+  s_f3d6e2f52aa9f2::t_4b2154a6416d94 26-30,35
+  h_2320cf0c69977d 95
+  s_f3d6e2f52aa9f2::t_9a8ed1ebbbda5b 37-46,49-58,72,88,93-94,96-103,105,125
+apps/web/src/pages/home/home.tsx
+  s_f3d6e2f52aa9f2::t_4231120cb4562c 139,195
+apps/web/src/pages/workspace/components/IntentPanel.tsx
+  s_f3d6e2f52aa9f2::t_137bcd7b47a330 14-20,24-25
+  s_f3d6e2f52aa9f2::t_821c029bdf681f 1,3,146-158
+  s_f3d6e2f52aa9f2::t_f6a6b7f45b4521 9,21-23,45,69-73,163
+  s_f3d6e2f52aa9f2::t_353f1b98221680 38,42,50,60,65
+apps/web/src/pages/workspace/workspace.module.css
+  s_f3d6e2f52aa9f2::t_1000732c2b9355 435,1142-1165
+  s_f3d6e2f52aa9f2::t_cbb28fb25677c7 437-461
+  s_f3d6e2f52aa9f2::t_3eed5c33165649 1311,1313-1315,1317,1319-1322,1328,1330,1333-1335
+  h_2320cf0c69977d 61
+  s_f3d6e2f52aa9f2::t_0a75c4b426f40f 1122-1127,1132
+  s_f3d6e2f52aa9f2::t_fdf665de297de5 1128-1131,1133-1135
+  s_f3d6e2f52aa9f2::t_1ed1c344aa8279 22-24,28-29
+  s_dafcb681974aaa::t_1186839bc8f159 399-434,1337-1339,1342-1343
+  s_f3d6e2f52aa9f2::t_080beb4ca57cde 436
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "c500926011a92345db01b664ada41797c215ee87",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    }
+  },
+  "sessions": {
+    "s_dafcb681974aaa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f8f48-32d1-74d0-ba81-1002159a2649",
+        "model": "gpt-5.5"
+      },
+      "human_author": "zuoyu <zuoyu@dtstack.com>"
+    },
+    "s_f3d6e2f52aa9f2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f9df1-2e80-7872-ab6b-81e5d8b32206",
+        "model": "gpt-5.5"
+      },
+      "human_author": "zuoyu <zuoyu@dtstack.com>"
+    }
+  }
+}
