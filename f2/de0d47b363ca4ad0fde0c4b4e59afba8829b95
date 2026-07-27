@@ -1,0 +1,34 @@
+apps/web/src/pages/workspace/workspace.module.css
+  s_ab90adbc884baa::t_e42e24997c55c1 61,67-70,114
+  s_ab90adbc884baa::t_24f9b6ebee44b3 77-113
+apps/web/src/pages/workspace/workspace.tsx
+  s_ab90adbc884baa::t_7dcd927afa0325 51,231
+  s_ab90adbc884baa::t_bed3891c523772 2,54-56,75-76,96-97,141-158,165-194,196-202,212-230,232-244,925-929,976-988
+  s_ab90adbc884baa::t_9f73a8290ba578 77,195
+  s_ab90adbc884baa::t_191f1c6287e081 139-140,159-164,203-211
+  h_c3d9a0bbc00ae8 52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f2de0d47b363ca4ad0fde0c4b4e59afba8829b95",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    },
+    "h_c3d9a0bbc00ae8": {
+      "author": "pumpkynn <19198402685@163.com>"
+    }
+  },
+  "sessions": {
+    "s_ab90adbc884baa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa24a-f502-7830-8125-0431f8555d29",
+        "model": "gpt-5.5"
+      },
+      "human_author": "pumpkynn <19198402685@163.com>"
+    }
+  }
+}
