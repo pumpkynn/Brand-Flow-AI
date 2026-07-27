@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 import { ReactFlowProvider } from 'reactflow'
 import { message } from 'antd'
@@ -47,6 +48,12 @@ const NODE_ID_TO_GRAPH_KEY: Record<FlowNodeId, string> = {
 
 const NODE_ORDER: FlowNodeId[] = ['intent', 'brand-kb', 'prompt', 'image-gen', 'compose', 'eval']
 
+const RIGHT_PANEL_DEFAULT_WIDTH = 400
+const RIGHT_PANEL_MIN_WIDTH = 200
+const RIGHT_PANEL_MAX_WIDTH = 2000
+const CENTER_MIN_WIDTH = 480
+const PANEL_RESIZE_STEP = 24
+
 const NODE_LABELS: Record<FlowNodeId, string> = {
   intent: '意图解析',
   'brand-kb': '知识库匹配',
@@ -64,6 +71,9 @@ const createInitialNodeStatuses = (): Record<FlowNodeId, NodeExecStatus> => ({
   compose: 'pending',
   eval: 'pending',
 })
+
+const clampRightPanelWidth = (width: number, maxWidth = RIGHT_PANEL_MAX_WIDTH) =>
+  Math.min(Math.max(width, RIGHT_PANEL_MIN_WIDTH), maxWidth)
 
 const isIntentOutput = (value: unknown): value is IntentOutput => {
   if (!value || typeof value !== 'object') return false
@@ -83,6 +93,8 @@ const Workspace = () => {
   /* ---- 视图 / 节点选择 ---- */
   const [viewTabIndex, setViewTabIndex] = useState(0)
   const [selectedNodeId, setSelectedNodeId] = useState<FlowNodeId | null>(null)
+  const [rightPanelWidth, setRightPanelWidth] = useState(RIGHT_PANEL_DEFAULT_WIDTH)
+  const [isResizingPanel, setIsResizingPanel] = useState(false)
 
   const handleNodeClick = (nodeId: string) => {
     setSelectedNodeId(nodeId as FlowNodeId)
@@ -124,6 +136,112 @@ const Workspace = () => {
   const eventSourceRef = useRef<{ close: () => void } | null>(null)
   const nodeStreamDataRef = useRef<Record<string, Record<string, unknown>>>({})
   const lastNavWorkflowIdRef = useRef<string | null>(null)
+  const bodyRef = useRef<HTMLDivElement | null>(null)
+  const panelResizeMetricsRef = useRef<{ lastClientX: number; maxWidth: number } | null>(null)
+
+  const getRightPanelMaxWidth = useCallback(() => {
+    const bodyRect = bodyRef.current?.getBoundingClientRect()
+    if (!bodyRect) return RIGHT_PANEL_MAX_WIDTH
+
+    return Math.min(
+      RIGHT_PANEL_MAX_WIDTH,
+      Math.max(RIGHT_PANEL_MIN_WIDTH, bodyRect.width - CENTER_MIN_WIDTH),
+    )
+  }, [])
+
+  const handlePanelResizeStart = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (event.button !== 0) return
+
+      const bodyRect = bodyRef.current?.getBoundingClientRect()
+      if (!bodyRect) return
+
+      event.preventDefault()
+      panelResizeMetricsRef.current = {
+        lastClientX: event.clientX,
+        maxWidth: getRightPanelMaxWidth(),
+      }
+      setIsResizingPanel(true)
+    },
+    [getRightPanelMaxWidth],
+  )
+
+  const handlePanelResizeKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      const maxWidth = getRightPanelMaxWidth()
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        setRightPanelWidth((width) => clampRightPanelWidth(width + PANEL_RESIZE_STEP, maxWidth))
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        setRightPanelWidth((width) => clampRightPanelWidth(width - PANEL_RESIZE_STEP, maxWidth))
+      }
+
+      if (event.key === 'Home') {
+        event.preventDefault()
+        setRightPanelWidth(RIGHT_PANEL_MIN_WIDTH)
+      }
+
+      if (event.key === 'End') {
+        event.preventDefault()
+        setRightPanelWidth(maxWidth)
+      }
+    },
+    [getRightPanelMaxWidth],
+  )
+
+  useEffect(() => {
+    if (!isResizingPanel) return
+
+    const previousCursor = document.body.style.cursor
+    const previousUserSelect = document.body.style.userSelect
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const metrics = panelResizeMetricsRef.current
+      if (!metrics) return
+
+      const deltaX = metrics.lastClientX - event.clientX
+      metrics.lastClientX = event.clientX
+      metrics.maxWidth = getRightPanelMaxWidth()
+
+      setRightPanelWidth((width) => clampRightPanelWidth(width + deltaX, metrics.maxWidth))
+    }
+
+    const handlePointerEnd = () => {
+      panelResizeMetricsRef.current = null
+      setIsResizingPanel(false)
+    }
+
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerEnd)
+    window.addEventListener('pointercancel', handlePointerEnd)
+
+    return () => {
+      document.body.style.cursor = previousCursor
+      document.body.style.userSelect = previousUserSelect
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerEnd)
+      window.removeEventListener('pointercancel', handlePointerEnd)
+    }
+  }, [getRightPanelMaxWidth, isResizingPanel])
+
+  useEffect(() => {
+    const handleWindowResize = () => {
+      const maxWidth = getRightPanelMaxWidth()
+      setRightPanelWidth((width) => clampRightPanelWidth(width, maxWidth))
+    }
+
+    window.addEventListener('resize', handleWindowResize)
+
+    return () => {
+      window.removeEventListener('resize', handleWindowResize)
+    }
+  }, [getRightPanelMaxWidth])
 
   const resetWorkflowRuntime = useCallback(
     (prompt?: string) => {
@@ -804,7 +922,11 @@ const Workspace = () => {
         </div>
       </div>
 
-      <div className={styles.body}>
+      <div
+        ref={bodyRef}
+        className={`${styles.body} ${isResizingPanel ? styles.bodyResizing : ''}`}
+        style={{ gridTemplateColumns: `minmax(0, 1fr) 8px ${rightPanelWidth}px` }}
+      >
         <section className={styles.center}>
           {viewTabIndex === 0 ? (
             <div className={styles.canvasArea}>
@@ -850,6 +972,19 @@ const Workspace = () => {
             </div>
           )}
         </section>
+
+        <div
+          className={styles.panelResizeHandle}
+          role="separator"
+          aria-label="调整节点属性面板宽度"
+          aria-orientation="vertical"
+          aria-valuemin={RIGHT_PANEL_MIN_WIDTH}
+          aria-valuemax={RIGHT_PANEL_MAX_WIDTH}
+          aria-valuenow={rightPanelWidth}
+          tabIndex={0}
+          onKeyDown={handlePanelResizeKeyDown}
+          onPointerDown={handlePanelResizeStart}
+        />
 
         <aside className={styles.right}>
           <div className={styles.rightHeader}>

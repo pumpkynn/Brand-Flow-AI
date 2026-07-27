@@ -58,10 +58,14 @@
 /* ===== 下方双栏区域 ===== */
 .body {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: minmax(0, 1fr) 8px 400px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+.bodyResizing {
+  cursor: col-resize;
 }
 
 /* ===== 中间画布区 ===== */
@@ -70,13 +74,50 @@
   min-height: 0;
 }
 
+.panelResizeHandle {
+  position: relative;
+  z-index: 5;
+  min-height: 0;
+  background: var(--border-color);
+  cursor: col-resize;
+  touch-action: none;
+  transition: background 0.15s;
+}
+
+.panelResizeHandle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 48px;
+  border-radius: 999px;
+  background: #b0b7c7;
+  transform: translate(-50%, -50%);
+  transition:
+    background 0.15s,
+    height 0.15s;
+}
+
+.panelResizeHandle:hover,
+.panelResizeHandle:focus-visible {
+  background: #e8f0fe;
+  outline: none;
+}
+
+.panelResizeHandle:hover::before,
+.panelResizeHandle:focus-visible::before,
+.bodyResizing .panelResizeHandle::before {
+  height: 64px;
+  background: var(--primary);
+}
+
 /* ===== 右侧属性面板 ===== */
 .right {
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 0;
   background: var(--bg-panel);
-  border-left: 1px solid var(--border-color);
 }
 
 /* ===== 右侧头部 ===== */
