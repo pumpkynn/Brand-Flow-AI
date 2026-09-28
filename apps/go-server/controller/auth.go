@@ -84,3 +84,26 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	})
 
 }
+
+// Profile GET /auth/profile，需要登录才能访问
+func (ctrl *AuthController) Profile(c *gin.Context) {
+	// 从中间件塞进来的 context 里拿 userID
+	userID := c.GetUint("userID")
+
+	user, err := ctrl.authService.GetProfile(userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"success": false,
+			"message": "用户不存在",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data": gin.H{
+			"id":       user.ID,
+			"username": user.Username,
+		},
+	})
+}

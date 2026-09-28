@@ -1,6 +1,7 @@
 package main
 
 import (
+	"brand-flow-server/common/middleware"
 	"brand-flow-server/config"
 	"brand-flow-server/controller"
 	"brand-flow-server/model"
@@ -24,6 +25,10 @@ func main() {
 			"data":    "hello",
 		})
 	})
+	// 需要登录才能访问的接口，挂上 AuthRequired 中间件
+	auth := r.Group("/auth")
+	auth.Use(middleware.AuthRequired())
+	auth.GET("/profile", authCtrl.Profile)
 
 	r.Run(":8080")
 }

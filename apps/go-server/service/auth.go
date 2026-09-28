@@ -70,4 +70,9 @@ func (s *AuthService) Login(username, password string) (*model.User, string, err
 	return user, token, nil
 }
 
+// GetProfile 根据用户ID 查用户信息
+func (s *AuthService) GetProfile(userID uint) (*model.User, error) {
+	return s.userDao.FindByID(userID)
+}
+
 //这个文件负责注册和登录功能的实现，注册：检查用户名是否重复，登录：查某个用户在数据库里是否存在

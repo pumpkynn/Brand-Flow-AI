@@ -30,3 +30,13 @@ func (d *UserDao) FindByUsername(username string) (*model.User, error) {
 func (d *UserDao) Create(user *model.User) error {
 	return d.db.Create(user).Error
 }
+
+// 按照 ID 查用户
+func (d *UserDao) FindByID(id uint) (*model.User, error) {
+	var user model.User
+	err := d.db.First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

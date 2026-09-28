@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -43,8 +44,9 @@ func AuthRequired() gin.HandlerFunc {
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"success": false,
-				"message": "token 无效或已过期",
+				"message": "token 无效: " + err.Error(),
 			})
+			fmt.Println("收到的 token:", tokenStr)
 			return
 		}
 
