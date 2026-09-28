@@ -1,0 +1,26 @@
+apps/go-server/common/middleware/auth.go
+  h_c3d9a0bbc00ae8 1-58
+apps/go-server/service/auth.go
+  h_c3d9a0bbc00ae8 6,53,58,64,66-68,70
+  h_c3d9a0bbc00ae8 69
+apps/go-server/controller/auth.go
+  h_c3d9a0bbc00ae8 68,80
+apps/go-server/go.mod
+  h_c3d9a0bbc00ae8 20
+apps/go-server/go.sum
+  h_c3d9a0bbc00ae8 31-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0a15c4d937a00908682b3c074fbcc6211b458a11",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    },
+    "h_c3d9a0bbc00ae8": {
+      "author": "pumpkynn <19198402685@163.com>"
+    }
+  }
+}
