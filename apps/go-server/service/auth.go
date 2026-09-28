@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 
+	"brand-flow-server/common/middleware"
 	"brand-flow-server/dao"
 	"brand-flow-server/model"
 
@@ -49,20 +50,24 @@ func (s *AuthService) Register(username, password string) (*model.User, error) {
 }
 
 // Login 登录，传用户名和密码，对了返回用户，错了返回错误
-func (s *AuthService) Login(username, password string) (*model.User, error) {
+func (s *AuthService) Login(username, password string) (*model.User, string, error) {
 	//1.按用户名查用户
 	user, err := s.userDao.FindByUsername(username)
 	if err != nil {
 		//没查到，返回“用户名或密码错误”
-		return nil, errors.New("用户名或密码错误")
+		return nil, "", errors.New("用户名或密码错误")
 	}
 	//2.比对密码，拿数据库里的加密密码+用户传的明文密码比对
 	// 注意：数据库里的是加密后的，不能直接 == 比
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return nil, errors.New("用户名或密码错误")
+		return nil, "", errors.New("用户名或密码错误")
 	}
-	return user, nil
+	token, err := middleware.GenerateToken(user.ID)
+	if err != nil {
+		return nil, "", err
+	}
+	return user, token, nil
 }
 
 //这个文件负责注册和登录功能的实现，注册：检查用户名是否重复，登录：查某个用户在数据库里是否存在

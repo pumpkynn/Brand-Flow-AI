@@ -65,7 +65,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 		})
 		return
 	}
-	user, err := ctrl.authService.Login(req.Username, req.Password)
+	user, token, err := ctrl.authService.Login(req.Username, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
@@ -77,6 +77,7 @@ func (ctrl *AuthController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data": gin.H{
+			"token":    token,
 			"id":       user.ID,
 			"username": user.Username,
 		},
