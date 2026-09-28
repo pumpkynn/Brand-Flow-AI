@@ -1,0 +1,23 @@
+apps/go-server/config/db.go
+  h_c3d9a0bbc00ae8 1-17
+apps/go-server/main.go
+  h_c3d9a0bbc00ae8 1-22
+apps/go-server/go.mod
+  h_c3d9a0bbc00ae8 1-42
+apps/go-server/go.sum
+  h_c3d9a0bbc00ae8 1-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a7ef6d52851b07be9cd6eb3d4d4c340ef2a1da61",
+  "prompts": {},
+  "humans": {
+    "h_2320cf0c69977d": {
+      "author": "zuoyu <zuoyu@dtstack.com>"
+    },
+    "h_c3d9a0bbc00ae8": {
+      "author": "pumpkynn <19198402685@163.com>"
+    }
+  }
+}
